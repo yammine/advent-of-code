@@ -1,0 +1,121 @@
+# Advent of Code 2023
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1.5"}
+])
+```
+
+## Day 1
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Part 1
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input","day":"1","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2023", "1", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+```elixir
+# The newly-improved calibration document consists of lines of text; 
+# each line originally contained a specific calibration value that the Elves now need to recover. 
+# On each line, the calibration value can be found by combining the first digit and the last digit
+#  (in that order) to form a single two-digit number.
+
+defmodule Day1 do
+  def run(input) do
+    input
+    |> String.split("\n")
+    |> Stream.map(&extract_digits/1)
+    |> Stream.map(&pick_first_and_last/1)
+    |> Enum.sum()
+  end
+
+  defp extract_digits(str) do
+    extract_digits(str, [])
+  end
+
+  defp extract_digits(<<>>, acc), do: Enum.reverse(acc)
+
+  defp extract_digits(<<char, rest::binary>>, acc) when char in ~c"0123456789" do
+    extract_digits(rest, [char | acc])
+  end
+
+  defp extract_digits(<<_char, rest::binary>>, acc), do: extract_digits(rest, acc)
+
+  defp pick_first_and_last(charlist) do
+    first = List.first(charlist)
+    last = List.last(charlist)
+
+    String.to_integer(<<first, last>>)
+  end
+end
+
+Day1.run(puzzle_input)
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Part 2
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input2","day":"1","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input2} =
+  KinoAOC.download_puzzle("2023", "1", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+```elixir
+# The newly-improved calibration document consists of lines of text; 
+# each line originally contained a specific calibration value that the Elves now need to recover. 
+# On each line, the calibration value can be found by combining the first digit and the last digit
+#  (in that order) to form a single two-digit number.
+
+defmodule Day1Part2 do
+  @number_map [
+    {"one", "1"},
+    {"two", "2"},
+    {"three", "3"},
+    {"four", "4"},
+    {"five", "5"},
+    {"six", "6"},
+    {"seven", "7"},
+    {"eight", "8"},
+    {"nine", "9"}
+  ]
+
+  def run(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&extract_digits/1)
+    |> Enum.map(&pick_first_and_last/1)
+    |> Enum.sum()
+    |> dbg()
+  end
+
+  defp extract_digits(<<>>), do: <<>>
+
+  defp extract_digits(<<char, rest::binary>>) when char in ?1..?9 do
+    <<char>> <> extract_digits(rest)
+  end
+
+  for {str, char} <- @number_map do
+    defp extract_digits(<<unquote(str), rest::binary>>) do
+      unquote(char) <> extract_digits(String.last(unquote(str)) <> rest)
+    end
+  end
+
+  defp extract_digits(<<_char, rest::binary>>), do: extract_digits(rest)
+
+  defp pick_first_and_last(str) do
+    first = String.first(str)
+    last = String.last(str)
+    String.to_integer(first <> last)
+  end
+end
+
+Day1Part2.run(puzzle_input2)
+```
