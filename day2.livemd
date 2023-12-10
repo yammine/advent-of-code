@@ -1,0 +1,161 @@
+# Advent of Code Day 2
+
+```elixir
+Mix.install([
+  {:kino_aoc, "~> 0.1.5"}
+])
+```
+
+## Part 1
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input","day":"2","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input} =
+  KinoAOC.download_puzzle("2023", "2", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+```elixir
+defmodule Day2Part1 do
+  defmodule Game do
+    defstruct id: nil, max_red: 0, max_green: 0, max_blue: 0, valid: true
+  end
+
+  @max_red 12
+  @max_green 13
+  @max_blue 14
+
+  def run(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&parse_game/1)
+    |> Enum.map(&check_validity/1)
+    |> Enum.filter(&(&1.valid == true))
+    |> Enum.map(& &1.id)
+    |> Enum.sum()
+  end
+
+  defp parse_game(line) do
+    %{"id" => game_id, "rest" => rest} =
+      Regex.named_captures(~r/Game (?<id>[\d]+): (?<rest>.*)/, line)
+
+    game = %Game{id: String.to_integer(game_id)}
+
+    shows = String.split(rest, ";")
+
+    parsed =
+      for show <- shows do
+        colors = String.split(show, ", ")
+
+        for c <- colors, into: %{} do
+          %{"number" => number, "color" => color} =
+            Regex.named_captures(~r/(?<number>[\d]+) (?<color>red|green|blue)/, c)
+
+          {color, String.to_integer(number)}
+        end
+      end
+
+    maximums =
+      parsed
+      |> Enum.reduce(%{}, fn map, acc ->
+        Map.merge(acc, map, fn _k, v1, v2 ->
+          Enum.max([v1, v2])
+        end)
+      end)
+
+    %Game{
+      game
+      | max_red: Map.get(maximums, "red", 0),
+        max_green: Map.get(maximums, "green", 0),
+        max_blue: Map.get(maximums, "blue", 0)
+    }
+  end
+
+  defp check_validity(game) do
+    case game do
+      %{max_red: max_red} when max_red > @max_red ->
+        %Game{game | valid: false}
+
+      %{max_green: max_green} when max_green > @max_green ->
+        %Game{game | valid: false}
+
+      %{max_blue: max_blue} when max_blue > @max_blue ->
+        %Game{game | valid: false}
+
+      _ ->
+        game
+    end
+  end
+end
+
+Day2Part1.run(puzzle_input)
+```
+
+## Part 2
+
+<!-- livebook:{"attrs":{"assign_to":"puzzle_input2","day":"2","session_secret":"AOC_SESSION","year":"2023"},"chunks":null,"kind":"Elixir.KinoAOC.HelperCell","livebook_object":"smart_cell"} -->
+
+```elixir
+{:ok, puzzle_input2} =
+  KinoAOC.download_puzzle("2023", "2", System.fetch_env!("LB_AOC_SESSION"))
+```
+
+```elixir
+defmodule Day2Part2 do
+  defmodule Game do
+    defstruct id: nil, max_red: 0, max_green: 0, max_blue: 0, valid: true
+  end
+
+  def run(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&parse_game/1)
+    |> Enum.map(&get_power/1)
+    |> Enum.sum()
+  end
+
+  defp parse_game(line) do
+    %{"id" => game_id, "rest" => rest} =
+      Regex.named_captures(~r/Game (?<id>[\d]+): (?<rest>.*)/, line)
+
+    game = %Game{id: String.to_integer(game_id)}
+
+    shows = String.split(rest, ";")
+
+    parsed =
+      for show <- shows do
+        colors = String.split(show, ", ")
+
+        for c <- colors, into: %{} do
+          %{"number" => number, "color" => color} =
+            Regex.named_captures(~r/(?<number>[\d]+) (?<color>red|green|blue)/, c)
+
+          {color, String.to_integer(number)}
+        end
+      end
+
+    maximums =
+      parsed
+      |> Enum.reduce(%{}, fn map, acc ->
+        Map.merge(acc, map, fn _k, v1, v2 ->
+          Enum.max([v1, v2])
+        end)
+      end)
+
+    %Game{
+      game
+      | max_red: Map.get(maximums, "red", 0),
+        max_green: Map.get(maximums, "green", 0),
+        max_blue: Map.get(maximums, "blue", 0)
+    }
+  end
+
+  defp get_power(game) do
+    game.max_red * game.max_green * game.max_blue
+  end
+end
+
+Day2Part2.run(puzzle_input2)
+```
+
+<!-- livebook:{"offset":3701,"stamp":{"token":"XCP.Z9tLD2h3hgk1VLoQtZK-yQRbVK3JCXw-jB5SLbA2ObPIz8q3pifS5AMtmZH34I2aR4xydTG_o9BssF0y9XmHWsExtFzOLhjG_80_QOeW4C-FiwcWWBY","version":2}} -->
